@@ -5,5 +5,5 @@ const PORT = process.env.PORT;
 
 app.listen(PORT, (err) => {
   if (err) console.log(err);
-  console.log(`Server is listening on $PORT}`);
+  console.log(`Server is listening on ${PORT}`);
 });
