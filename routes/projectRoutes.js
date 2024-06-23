@@ -14,7 +14,7 @@ const router = express.Router();
 router.param('id', checkProjectId);
 router
   .route('/')
-  .get(checkProject, getAllProjects)
+  .get(getAllProjects)
   .post(protect, checkBodyProject, createProject);
 router
   .route('/:id')
