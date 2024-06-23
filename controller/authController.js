@@ -219,3 +219,56 @@ export async function resetPassword(req, res) {
     message: 'Successfully changed your password',
   });
 }
+
+export async function changePassword(req, res) {
+  try {
+    const id = +req.params.id;
+    const user = await findUserById(id);
+
+    if (!(await comparePasswords(req.body.oldPassword, user.password))) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Your Old Password is Incorrect',
+      });
+    }
+    if (req.body.password !== req.body.passwordConfirmation)
+      return res.status(400).json({
+        status: 'error',
+        message: 'Password confirmation does not match password',
+      });
+
+    const salt = await bcrypt.genSalt(12);
+    const password = await bcrypt.hash(req.body.password, salt);
+
+    const data = {
+      password,
+      passwordResetExp: null,
+      passwordResetToken: null,
+      passwordChangedAt: new Date(),
+    };
+
+    await db.query(
+      'UPDATE users SET password = ?, passwordResetExp = ?, passwordResetToken = ?, passwordChangedAt = ? WHERE id = ?',
+      [
+        data.password,
+        data.passwordResetExp,
+        data.passwordResetToken,
+        data.passwordChangedAt,
+        id,
+      ]
+    );
+
+    const token = signToken(id);
+
+    return res.status(201).json({
+      status: 'Success',
+      token,
+      message: 'Successfully changed your password',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      status: 'err',
+      message: 'There is something wrong',
+    });
+  }
+}

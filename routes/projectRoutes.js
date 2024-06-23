@@ -1,6 +1,8 @@
 import express from 'express';
 import { protect } from '../controller/authController.js';
 import {
+  checkBodyProject,
+  checkProject,
   checkProjectId,
   createProject,
   deleteProject,
@@ -10,11 +12,14 @@ import {
 } from '../controller/projectController.js';
 const router = express.Router();
 router.param('id', checkProjectId);
-router.route('/').get(protect, getAllProjects).post(protect, createProject);
+router
+  .route('/')
+  .get(checkProject, getAllProjects)
+  .post(protect, checkBodyProject, createProject);
 router
   .route('/:id')
-  .get(protect, getProject)
-  .patch(protect, updateProject)
+  .get(getProject)
+  .patch(protect, checkBodyProject, updateProject)
   .delete(protect, deleteProject);
 
 export default router;

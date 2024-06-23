@@ -78,8 +78,6 @@ export async function createResetPasswordToken(userId) {
     [hashedToken, tokenExpiry, userId]
   );
 
-  const [user] = await findUserById(userId);
-
   return resetToken;
 }
 

@@ -64,13 +64,13 @@ export async function findUser(email, username) {
 
 export async function findUserById(id) {
   const [users] = await db.query('SELECT * FROM users WHERE id = ?', [id]);
-  return users;
+  return users[0];
 }
 
 export async function getUsers(req, res) {
   const [users] = await db.query(
     `SELECT * FROM users 
-     JOIN user_information ON users.id = user_information.user_id`
+     JOIN user_information ON users.id = user_information.user_id where users.role="Arsitek"`
   );
 
   return res
