@@ -21,7 +21,7 @@ export async function checkProjectId(req, res, next) {
 export async function getSingleProject(id) {
   const projectId = +id;
   const [row] = await db.query(
-    `SELECT p.*, ui.linkedin, ui.instagram,ui.rating,u.username
+    `SELECT p.*, ui.linkedin, ui.instagram,ui.rating,ui.phone,u.username
      FROM projects p
      LEFT JOIN user_information ui ON p.user_id = ui.user_id
       LEFT JOIN users u ON p.user_id = u.id
@@ -65,7 +65,6 @@ export async function getProject(req, res) {
   try {
     const projectId = Number(req.params.id);
     const { project, images_url } = await getSingleProject(projectId);
-    console.log(project);
     return res.status(200).json({
       status: 'success',
       data: { project: { ...project, images: images_url } },
@@ -78,7 +77,7 @@ export async function getProject(req, res) {
 export async function getAllProjects(req, res) {
   try {
     const [projectsQuery] = await db.query(`
-      SELECT p.*, pi.image_url,pi.image_id,u.username, ui.linkedin, ui.instagram
+      SELECT p.*, pi.image_url,pi.image_id,u.username,ui.phone, ui.linkedin, ui.instagram
       FROM projects p
       LEFT JOIN project_images pi ON p.project_id = pi.project_id
       LEFT JOIN user_information ui ON p.user_id = ui.user_id
@@ -110,7 +109,52 @@ export async function getAllProjects(req, res) {
     return res.status(500).json({ status: 'error', message: err.message });
   }
 }
+export async function getAllUsersProjects(req, res) {
+  if (typeof req.params.userId === 'object') {
+    JSON.stringify(req.params.userId);
+  }
 
+  if (!req.params.userId)
+    return res.status(400).json({ status: 'error', message: 'There is no id' });
+
+  try {
+    const [projectsQuery] = await db.query(
+      `
+      SELECT p.*, pi.image_url,pi.image_id,u.username, ui.linkedin, ui.instagram
+      FROM projects p
+      LEFT JOIN project_images pi ON p.project_id = pi.project_id
+      LEFT JOIN user_information ui ON p.user_id = ui.user_id
+      LEFT JOIN users u ON p.user_id = u.id
+      where u.id = ?
+    `,
+      [req.params.userId]
+    );
+
+    const projectsMap = projectsQuery.reduce((map, row) => {
+      if (!map.has(row.project_id)) {
+        map.set(row.project_id, {
+          ...row,
+          image_url: row.image_url ? [row.image_url] : [],
+          linkedin: row.linkedin,
+          instagram: row.instagram,
+        });
+      } else {
+        const project = map.get(row.project_id);
+        if (row.image_url) {
+          project.image_url.push(row.image_url);
+        }
+      }
+      return map;
+    }, new Map());
+
+    const response = Array.from(projectsMap.values());
+    return res
+      .status(200)
+      .json({ status: 'success', data: { projects: response } });
+  } catch (err) {
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+}
 export async function createProject(req, res) {
   const { handphone, images, linkedin, instagram, ...projectData } = req.body;
   try {
@@ -165,10 +209,15 @@ export async function deleteProject(req, res) {
 }
 
 export async function updateProject(req, res) {
-  const { images, ...projectData } = req.body;
+  const { images, handphone, linkedin, instagram, user_id, ...projectData } =
+    req.body;
+  console.log(projectData.data);
   try {
     const projectId = Number(req.params.id);
-
+    await db.query('UPDATE user_information SET ? WHERE user_id = ?', [
+      { linkedin, instagram },
+      user_id,
+    ]);
     await db.query('UPDATE projects SET ? WHERE project_id = ?', [
       projectData,
       projectId,

@@ -7,6 +7,7 @@ import {
   createProject,
   deleteProject,
   getAllProjects,
+  getAllUsersProjects,
   getProject,
   updateProject,
 } from '../controller/projectController.js';
@@ -16,10 +17,13 @@ router
   .route('/')
   .get(getAllProjects)
   .post(protect, checkBodyProject, createProject);
+
+router.get('/userProjects/:userId', protect, getAllUsersProjects);
+
 router
   .route('/:id')
   .get(getProject)
-  .patch(protect, checkBodyProject, updateProject)
+  .patch(protect, updateProject)
   .delete(protect, deleteProject);
 
 export default router;

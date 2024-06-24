@@ -132,6 +132,20 @@ export async function deleteUser(req, res) {
   const userId = Number(req.params.id);
 
   try {
+    const [datas] = await db.query(
+      `SELECT project_id from projects where user_id =? `,
+      [userId]
+    );
+    if (datas) {
+      const deletePromises = datas.map((data) => {
+        return db.query('DELETE FROM project_images WHERE project_id = ?', [
+          data.project_id,
+        ]);
+      });
+      await Promise.all(deletePromises);
+    }
+
+    await db.query('DELETE FROM projects WHERE user_id = ?', [userId]);
     await db.query('DELETE FROM user_information WHERE user_id = ?', [userId]);
     await db.query('DELETE FROM users WHERE id = ?', [userId]);
 
@@ -142,7 +156,7 @@ export async function deleteUser(req, res) {
   } catch (error) {
     return res.status(500).json({
       status: 'error',
-      message: 'An error occurred while deleting the user',
+      message: error.message,
       error: error.message,
     });
   }

@@ -2,6 +2,7 @@ import { promisify } from 'util';
 import db from '../db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import {
   changedPasswordAfter,
   comparePasswords,
@@ -184,6 +185,21 @@ export async function forgotPassword(req, res) {
 }
 
 export async function resetPassword(req, res) {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const [row] = await db.query(
+    'SELECT * FROM users where passwordResetToken =  ? and passwordResetExp > ?',
+    [hashedToken, new Date()]
+  );
+
+  const user = row[0];
+  if (!user)
+    return res
+      .status(400)
+      .json({ status: 'fail', message: 'Token is Invalid or has expired' });
   if (req.body.password !== req.body.passwordConfirmation)
     return res.status(400).json({
       status: 'error',
@@ -199,19 +215,9 @@ export async function resetPassword(req, res) {
     passwordResetToken: null,
     passwordChangedAt: new Date(),
   };
-
-  await db.query(
-    'UPDATE users SET password = ?, passwordResetExp = ?, passwordResetToken = ?, passwordChangedAt = ? WHERE id = ?',
-    [
-      data.password,
-      data.passwordResetExp,
-      data.passwordResetToken,
-      data.passwordChangedAt,
-      req.user.id,
-    ]
-  );
-
-  const token = signToken(req.user.id);
+  await db.query('UPDATE users SET ? WHERE id = ?', [data, user.id]);
+  console.log(data);
+  const token = signToken(user.id);
 
   return res.status(201).json({
     status: 'Success',
