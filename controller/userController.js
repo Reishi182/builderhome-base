@@ -82,7 +82,7 @@ export async function updateUserInfo(req, res) {
   const userId = Number(req.params.id);
 
   try {
-    const [user] = await findUserById(userId);
+    const user = await findUserById(userId);
     if (!user) {
       return res.status(404).json({
         status: 'fail',
@@ -90,33 +90,11 @@ export async function updateUserInfo(req, res) {
       });
     }
 
-    if (req.body.username || req.body.email) {
-      if (req.body.email !== user.email) {
-        const existingUserWithEmail = await findUser(req.body.email);
-        if (existingUserWithEmail) {
-          return res.status(200).json({
-            status: 'fail',
-            message: 'Email already exists',
-          });
-        }
-      }
-
-      if (req.body.username !== user.username) {
-        const existingUserWithUsername = await findUser(req.body.username);
-        if (existingUserWithUsername) {
-          return res.status(200).json({
-            status: 'fail',
-            message: 'Username already exists',
-          });
-        }
-      }
-
-      await db.query('UPDATE users SET username = ?, email = ? WHERE id = ?', [
-        req.body.username,
-        req.body.email,
-        userId,
-      ]);
-    }
+    await db.query('UPDATE users SET username = ?, email = ? WHERE id = ?', [
+      req.body.username,
+      req.body.email,
+      userId,
+    ]);
 
     const userInfoUpdate = { ...req.body };
     delete userInfoUpdate.oldPassword;
@@ -145,8 +123,7 @@ export async function updateUserInfo(req, res) {
     console.error(err);
     return res.status(500).json({
       status: 'error',
-      message:
-        'An error occurred while updating user information. Please try again later.',
+      message: err.message,
     });
   }
 }
