@@ -156,16 +156,10 @@ export async function getAllUsersProjects(req, res) {
   }
 }
 export async function createProject(req, res) {
-  const { handphone, images, linkedin, instagram, ...projectData } = req.body;
+  const { handphone, images, ...projectData } = req.body;
   try {
     const [data] = await db.query('INSERT INTO projects SET ?', [projectData]);
-    if (linkedin || instagram) {
-      const data = { linkedin, instagram };
-      await db.query(
-        'update INTO user_information (linkedin,instagram) VALUES ? where user_id = ?',
-        [data, projectData.user_id]
-      );
-    }
+
     const projectId = data.insertId;
     if (Array.isArray(images) && images.length > 0) {
       const insertImageQueries = images.map((image) =>
@@ -211,13 +205,15 @@ export async function deleteProject(req, res) {
 export async function updateProject(req, res) {
   const { images, handphone, linkedin, instagram, user_id, ...projectData } =
     req.body;
-  console.log(projectData.data);
   try {
     const projectId = Number(req.params.id);
-    await db.query('UPDATE user_information SET ? WHERE user_id = ?', [
-      { linkedin, instagram },
-      user_id,
-    ]);
+    if (linkedin || instagram) {
+      const data = { linkedin, instagram };
+      await db.query(
+        'update INTO user_information (linkedin,instagram) VALUES ? where user_id = ?',
+        [data, user_id]
+      );
+    }
     await db.query('UPDATE projects SET ? WHERE project_id = ?', [
       projectData,
       projectId,
