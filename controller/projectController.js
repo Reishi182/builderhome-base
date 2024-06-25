@@ -21,7 +21,7 @@ export async function checkProjectId(req, res, next) {
 export async function getSingleProject(id) {
   const projectId = +id;
   const [row] = await db.query(
-    `SELECT p.*, ui.linkedin, ui.instagram,ui.rating,ui.phone,u.username
+    `SELECT p.*, ui.linkedin, ui.instagram,ui.rating,u.username
      FROM projects p
      LEFT JOIN user_information ui ON p.user_id = ui.user_id
       LEFT JOIN users u ON p.user_id = u.id
@@ -77,7 +77,7 @@ export async function getProject(req, res) {
 export async function getAllProjects(req, res) {
   try {
     const [projectsQuery] = await db.query(`
-      SELECT p.*, pi.image_url,pi.image_id,u.username,ui.phone, ui.linkedin, ui.instagram
+      SELECT p.*, pi.image_url,pi.image_id,u.username, ui.linkedin, ui.instagram
       FROM projects p
       LEFT JOIN project_images pi ON p.project_id = pi.project_id
       LEFT JOIN user_information ui ON p.user_id = ui.user_id
@@ -156,13 +156,13 @@ export async function getAllUsersProjects(req, res) {
   }
 }
 export async function createProject(req, res) {
-  const { handphone, images, linkedin, instagram, ...projectData } = req.body;
+  const { images, linkedin, instagram, ...projectData } = req.body;
   try {
     const [data] = await db.query('INSERT INTO projects SET ?', [projectData]);
     if (linkedin || instagram) {
       const data = { linkedin, instagram };
       await db.query(
-        'update INTO user_information (linkedin,instagram) VALUES ? where user_id = ?',
+        'UPDATE user_information SET linkedin = ?, instagram = ? WHERE user_id = ?',
         [data, projectData.user_id]
       );
     }
@@ -209,14 +209,13 @@ export async function deleteProject(req, res) {
 }
 
 export async function updateProject(req, res) {
-  const { images, handphone, linkedin, instagram, user_id, ...projectData } =
-    req.body;
+  const { images, linkedin, instagram, user_id, ...projectData } = req.body;
   try {
     const projectId = Number(req.params.id);
     if (linkedin || instagram) {
       const data = { linkedin, instagram };
       await db.query(
-        'update INTO user_information (linkedin,instagram) VALUES ? where user_id = ?',
+        'UPDATE user_information SET linkedin = ?, instagram = ? WHERE user_id = ?',
         [data, user_id]
       );
     }
