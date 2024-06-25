@@ -160,12 +160,12 @@ export async function createProject(req, res) {
   try {
     const [data] = await db.query('INSERT INTO projects SET ?', [projectData]);
     if (linkedin || instagram) {
-      const data = { linkedin, instagram };
       await db.query(
         'UPDATE user_information SET linkedin = ?, instagram = ? WHERE user_id = ?',
-        [data, projectData.user_id]
+        [linkedin, instagram, projectData.user_id]
       );
     }
+
     const projectId = data.insertId;
     if (Array.isArray(images) && images.length > 0) {
       const insertImageQueries = images.map((image) =>
@@ -213,10 +213,9 @@ export async function updateProject(req, res) {
   try {
     const projectId = Number(req.params.id);
     if (linkedin || instagram) {
-      const data = { linkedin, instagram };
       await db.query(
         'UPDATE user_information SET linkedin = ?, instagram = ? WHERE user_id = ?',
-        [data, user_id]
+        [linkedin, instagram, user_id]
       );
     }
     await db.query('UPDATE projects SET ? WHERE project_id = ?', [
