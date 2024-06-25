@@ -7,7 +7,7 @@ import projectRoutes from './routes/projectRoutes.js';
 const app = express();
 
 const corsOptions = {
-  origin: ['https://builder-home.vercel.app', 'http://localhost:2323'], // Allow this specific origin
+  origin: ['https://builder-home.vercel.app', 'http://localhost:5173'], // Allow this specific origin
   methods: 'GET,HEAD,PATCH,POST,DELETE',
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
