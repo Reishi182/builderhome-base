@@ -156,10 +156,16 @@ export async function getAllUsersProjects(req, res) {
   }
 }
 export async function createProject(req, res) {
-  const { handphone, images, ...projectData } = req.body;
+  const { handphone, images, linkedin, instagram, ...projectData } = req.body;
   try {
     const [data] = await db.query('INSERT INTO projects SET ?', [projectData]);
-
+    if (linkedin || instagram) {
+      const data = { linkedin, instagram };
+      await db.query(
+        'update INTO user_information (linkedin,instagram) VALUES ? where user_id = ?',
+        [data, projectData.user_id]
+      );
+    }
     const projectId = data.insertId;
     if (Array.isArray(images) && images.length > 0) {
       const insertImageQueries = images.map((image) =>
