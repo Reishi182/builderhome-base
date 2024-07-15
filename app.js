@@ -8,9 +8,9 @@ const app = express();
 
 const corsOptions = {
   origin: ['https://builder-home.vercel.app', 'http://localhost:5173'],
-  optionsSuccessStatus: 200,
-  methods: 'GET,HEAD,PATCH,POST,DELETE',
+  methods: ['GET', 'HEAD', 'PATCH', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
 app.use(cors(corsOptions));
