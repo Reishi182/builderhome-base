@@ -2,7 +2,6 @@ import express from 'express';
 import { protect } from '../controller/authController.js';
 import {
   checkBodyProject,
-  checkProject,
   checkProjectId,
   createProject,
   deleteProject,
@@ -18,7 +17,7 @@ router
   .get(getAllProjects)
   .post(protect, checkBodyProject, createProject);
 
-router.get('/userProjects/:userId', protect, getAllUsersProjects);
+router.get('/userProjects/:userId', getAllUsersProjects);
 
 router
   .route('/:id')

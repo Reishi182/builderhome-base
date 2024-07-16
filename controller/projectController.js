@@ -244,3 +244,41 @@ export async function updateProject(req, res) {
     return res.status(400).json({ status: 'error', message: err.message });
   }
 }
+export async function addWishlist(req, res) {
+  try {
+    await db.query(`insert into wishlist set ? `, [req.body]);
+    return res.status(200).json({
+      status: 'success',
+      message: 'Successfully Add Design To Wishlist',
+    });
+  } catch (err) {
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+}
+export async function getWishlist(req, res) {
+  const id = req.params.id;
+
+  try {
+    const [data] = await db.query(`select * from wishlist where user_id =  ?`, [
+      id,
+    ]);
+    return res.status(200).json({
+      status: 'success',
+      wishlists: data,
+    });
+  } catch (err) {
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+}
+export async function deleteWishlist(req, res) {
+  const id = req.params.id;
+
+  try {
+    await db.query(`delete from wishlist where id =  ?`, [id]);
+    return res.status(200).json({
+      status: 'success',
+    });
+  } catch (err) {
+    return res.status(400).json({ status: 'error', message: err.message });
+  }
+}
