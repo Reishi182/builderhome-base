@@ -159,7 +159,7 @@ export async function forgotPassword(req, res) {
       .json({ status: 'fail', message: 'There is No user with email address' });
 
   const resetToken = await createResetPasswordToken(user.id);
-  const resetURL = `${req.protocol}://localhost:5173/reset_password/${resetToken}`;
+  const resetURL = `https://https://builder-home.vercel.app/reset_password/${resetToken}`;
   const message = `Forgot Your Password? Submit a Request with your new Password and password confirmation to: ${resetURL}\nIf You didn't forget your password, please ignore this email`;
 
   try {
